@@ -1,19 +1,20 @@
-// This script will be executed each time a user attempts to login.
-// parameters: email and password, are used to validate the authenticity of the user. 
+// This script will be executed when the user wishes to change his password to test if the user exists. 
 
-function login(email, password, callback) {
-  console.log("login");
+function getByEmail (email, callback) {
+  console.log("getByEmail");
+  //console.log(email);
   //this example uses the "pg" library
   //more info here: https://github.com/brianc/node-postgres
 
   var conString = "postgres://"+configuration.dbUsername+":"+configuration.dbPassword+"@"+configuration.dbHost+"/"+configuration.dbDatabase;
+  console.log(conString);
   postgres(conString, function (err, client, done) {
     if (err) {
       console.log('could not connect to postgres db', err);
       return callback(err);
     }
 
-    var query = 'SELECT id, nickname, email, password ' +
+    var query = 'SELECT nickname, email ' +
       'FROM '+configuration.dbSchema+'.'+configuration.dbTable+' WHERE email = $1';
 
     client.query(query, [email], function (err, result) {
@@ -27,24 +28,13 @@ function login(email, password, callback) {
       }
 
       if (result.rows.length === 0) {
-        return callback(new WrongUsernameOrPasswordError(email));
+        return callback(null);
       }
 
       var user = result.rows[0];
+      //console.log(user);
 
-      bcrypt.compare(password, user.password, function (err, isValid) {
-        if (err) {
-          callback(err);
-        } else if (!isValid) {
-          callback(new WrongUsernameOrPasswordError(email));
-        } else {
-          callback(null, {
-            id: user.id,
-            nickname: user.nickname,
-            email: user.email
-          });
-        }
-      });
+      callback(null, user);
     });
   });
 }

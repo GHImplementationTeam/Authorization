@@ -1,8 +1,8 @@
-// This script will be executed when the user wishes to change his password to test if the user exists. 
+// This script will be executed after a user that signed-up, and follows the "verification" link.
+// parameter: email is used to verify an account. 
 
-function getByEmail (email, callback) {
-  console.log("getByEmail");
-  //console.log(email);
+function verify (email, callback) {
+  console.log("verify");
   //this example uses the "pg" library
   //more info here: https://github.com/brianc/node-postgres
 
@@ -13,8 +13,8 @@ function getByEmail (email, callback) {
       return callback(err);
     }
 
-    var query = 'SELECT nickname, email ' +
-      'FROM '+configuration.dbSchema+'.'+configuration.dbTable+' WHERE email = $1';
+    var query = 'UPDATE '+configuration.dbSchema+'.'+configuration.dbTable+' SET "emailVerified" = true ' +
+      'WHERE "emailVerified" = false AND email = $1';
 
     client.query(query, [email], function (err, result) {
       // NOTE: always call `done()` here to close
@@ -22,18 +22,15 @@ function getByEmail (email, callback) {
       done();
 
       if (err) {
-        console.log('error executing query', err);
         return callback(err);
       }
 
-      if (result.rows.length === 0) {
-        return callback(null);
+      if (result.rowCount === 0) {
+        return callback();
       }
 
-      var user = result.rows[0];
-      //console.log(user);
-
-      callback(null, user);
+      callback(null, result.rowCount > 0);
     });
   });
+
 }
