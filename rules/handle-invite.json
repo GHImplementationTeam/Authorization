@@ -1,5 +1,5 @@
 {
   "enabled": false,
   "order": 2,
-  "stage": "user_registration"
+  "stage": "pre_authorize"
 }
